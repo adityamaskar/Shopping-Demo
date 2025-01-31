@@ -1,5 +1,5 @@
 package com.aditya.paymentservice.dto;
 
 public enum Status {
-    Ordered , Failed, InProgress
+    Ordered, PaymentFailed, InventoryNotFound, Failed, InProgress
 }

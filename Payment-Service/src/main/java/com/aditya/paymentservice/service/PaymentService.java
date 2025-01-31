@@ -31,15 +31,15 @@ public class PaymentService {
 
     public final KafkaTemplate<String, PaymentHistory> kafkaTemplateInventory;
 
-    @KafkaListener(topics = "inventory-service-event", groupId = "payment-group", containerFactory = "kafkaListenerContainerFactoryPayment")
+    @KafkaListener(topics = "InventoryReserved", groupId = "payment-group", containerFactory = "kafkaListenerContainerFactoryPayment")
     public void consumePaymentEvent(OrderDTO orderDTO) {
         if (orderDTO == null) {
-            log.error("OrderDTO is null");
-//            todo send failure event
+            log.error("OrderDTO is null, cannot process payment");
             return;
         } else if (orderDTO.getCustomerId() == null) {
             log.error("Customer Id is null");
 //            todo send failure event
+            sendFailureEventToInventoryService(orderDTO, "Customer Id is null");
             return;
         }else {
             Double totalAmount = CalculateTotalAmount(orderDTO);
@@ -48,6 +48,26 @@ public class PaymentService {
         }
 
     }
+
+    public void sendFailureEventToInventoryService(OrderDTO orderDTO, String paymentStatus) {
+        log.info("Sending failure event to inventory service : {}", orderDTO);
+        PaymentHistory paymentHistory = createPaymentHistory(orderDTO, paymentStatus);
+        CompletableFuture<SendResult<String, PaymentHistory>> send = kafkaTemplateInventory.send("payment-service-failure", paymentHistory);
+        log.info("Failure event sent to inventory service");
+    }
+
+    public PaymentHistory createPaymentHistory(OrderDTO orderDTO, String paymentStatus) {
+        return PaymentHistory.builder()
+                .customerId(orderDTO.getCustomerId())
+                .paymentStatus(paymentStatus)
+                .productId(orderDTO.getProductId())
+                .productQuantity(orderDTO.getQuantity())
+//                .totalAmount(orderDTO.getTotalAmount())
+                .orderId(orderDTO.getId())
+                .paymentId(UUID.randomUUID().toString())
+                .build();
+    }
+
 
     public Double CalculateTotalAmount(OrderDTO orderDTO) {
         ProductDTO product = restTemplate.getForEntity("http://localhost:8080/inventory/product/" + orderDTO.getProductId(), ProductDTO.class).getBody();
@@ -63,7 +83,7 @@ public class PaymentService {
         Optional<Customer> customer = customerRepo.findById(orderDTO.getCustomerId());
         if(customer.isEmpty()){
             log.error("Customer not found");
-            //todo send failure event
+            sendFailureEventToInventoryService(orderDTO, "Customer Id is null");
             return;
         }
             Customer customerObj = customer.get();
@@ -84,6 +104,7 @@ public class PaymentService {
                     .build();
 
             PaymentHistory saved = paymentHistoryRepo.save(paymentSuccessful);
+            // todo sent confirmation to order-service.
             log.info("Amount deducted from customer account: " + totalAmount + ", Transaction Id : " + saved.getPaymentId());
         } else {
             log.error("Insufficient balance in customer account");
@@ -99,7 +120,6 @@ public class PaymentService {
             //todo send failure event
             CompletableFuture<SendResult<String, PaymentHistory>> send = kafkaTemplateInventory.send("payment-service-failure", paymentFailed);
             send.thenAccept(result -> log.info("Payment failed event sent to Kafka topic, Transaction Id : " + saved.getPaymentId()));
-
 
         }
     }

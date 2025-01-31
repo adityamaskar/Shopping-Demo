@@ -1,5 +1,5 @@
 package com.aditya.orderservice.entity;
 
 public enum Status {
-    Ordered , Failed, InProgress
+    Ordered, PaymentFailed, InventoryNotFound, Failed, InProgress
 }

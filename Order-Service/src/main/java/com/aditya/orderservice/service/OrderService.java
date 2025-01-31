@@ -6,10 +6,12 @@ import com.aditya.orderservice.entity.Status;
 import com.aditya.orderservice.repo.OrderRepo;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
-import java.util.UUID;
+import java.util.List;
+
 
 @Service
 @RequiredArgsConstructor
@@ -30,8 +32,26 @@ public class OrderService {
         log.info("Order saved: {}", save);
         orderDTO.setId(save.getId());
         orderDTO.setStatus(Status.InProgress);
-        kafkaTemplateOrder.send("order-service-event", orderDTO);
+        kafkaTemplateOrder.send("OrderCreated", orderDTO);
         log.info("Order sent to Kafka topic");
         return save.getId();
+    }
+
+    @KafkaListener(topics = "InventoryFailed", groupId = "order-group", containerFactory = "kafkaListenerContainerFactoryOrder")
+    public void consumeInventoryFailedEvent(OrderDTO orderDTO) {
+        log.info("Order failed event consumed: {}", orderDTO);
+        Order order = orderRepo.findById(orderDTO.getId()).orElse(null);
+        if(order != null){
+            order.setStatus(orderDTO.getStatus());
+            orderRepo.save(order);
+            log.info("Order status updated to Failed " + order.getStatus().toString() );
+        }
+        else {
+            log.error("Order not found with id: {}", orderDTO.getId());
+        }
+    }
+
+    public List<Order> getAllOrders() {
+        return orderRepo.findAll();
     }
 }

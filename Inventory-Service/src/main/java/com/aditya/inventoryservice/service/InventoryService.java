@@ -2,6 +2,7 @@ package com.aditya.inventoryservice.service;
 
 import com.aditya.inventoryservice.dto.OrderDTO;
 import com.aditya.inventoryservice.dto.PaymentHistory;
+import com.aditya.inventoryservice.dto.Status;
 import com.aditya.inventoryservice.entity.Product;
 import com.aditya.inventoryservice.repo.ProductRepo;
 import lombok.RequiredArgsConstructor;
@@ -28,14 +29,11 @@ public class InventoryService {
         productRepo.saveAll(products);
     }
 
-    @KafkaListener(topics = "order-service-event", groupId = "inventory-group", containerFactory = "kafkaListenerContainerFactoryOrder")
+    @KafkaListener(topics = "OrderCreated", groupId = "inventory-group", containerFactory = "kafkaListenerContainerFactoryOrder")
     public void createOrderEvent(OrderDTO order) {
         Product product = productRepo.findById(order.getProductId()).orElse(null);
-        if(product == null){
-            //todo send failure event
-        }
-        else if(product.getQuantityInStock() < order.getQuantity()){
-            //todo send failure event
+        if(product == null || product.getQuantityInStock() == 0 || product.getQuantityInStock() < order.getQuantity()){
+            sendFailureEventToOrderService(order);
         }
         else {
             product.setQuantityInStock(product.getQuantityInStock() - order.getQuantity());
@@ -51,8 +49,15 @@ public class InventoryService {
 
     public void sendOrderEventToPaymentService(OrderDTO order) {
         log.info("Sending order event to payment service : {}", order);
-        CompletableFuture<SendResult<String, OrderDTO>> send = kafkaTemplateInventory.send("inventory-service-event", order);
+        CompletableFuture<SendResult<String, OrderDTO>> send = kafkaTemplateInventory.send("InventoryReserved", order);
         log.info("Order event sent to payment service");
+    }
+
+    public void sendFailureEventToOrderService(OrderDTO order) {
+        log.info("Sending failure event to order service as the ordered products are either not available or out of stock  : {}", order);
+        order.setStatus(Status.InventoryNotFound);
+        CompletableFuture<SendResult<String, OrderDTO>> send = kafkaTemplateInventory.send("InventoryFailed", order);
+        log.info("Failure event sent to order service");
     }
 
     public Product getProductById(Long id) {
@@ -66,10 +71,23 @@ public class InventoryService {
         if(product != null){
             product.setQuantityInStock(product.getQuantityInStock() + paymentHistory.getProductQuantity());
             productRepo.save(product);
+            sendFailedPaymentEventToOrderService(paymentHistory);
             log.info("Stock added back for product id: {}", product.getId());
         }
         else {
             log.error("Product not found for order id: {}", paymentHistory.getOrderId());
         }
+    }
+
+    private void sendFailedPaymentEventToOrderService(PaymentHistory paymentHistory) {
+        log.info("Sending failed payment event to order service : {}", paymentHistory);
+        OrderDTO order = OrderDTO.builder().id(paymentHistory.getOrderId())
+                .status(Status.PaymentFailed)
+                .customerId(paymentHistory.getCustomerId())
+                .productId(paymentHistory.getProductId())
+                .quantity(paymentHistory.getProductQuantity())
+                .build();
+        CompletableFuture<SendResult<String, OrderDTO>> send = kafkaTemplateInventory.send("InventoryFailed", order);
+        log.info("Failed payment event sent to order service");
     }
 }
