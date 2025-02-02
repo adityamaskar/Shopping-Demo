@@ -90,4 +90,8 @@ public class InventoryService {
         CompletableFuture<SendResult<String, OrderDTO>> send = kafkaTemplateInventory.send("InventoryFailed", order);
         log.info("Failed payment event sent to order service");
     }
+
+    public List<Product> getAllProducts() {
+        return productRepo.findAll();
+    }
 }

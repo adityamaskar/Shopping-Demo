@@ -30,4 +30,10 @@ public class InventoryController {
         log.info("Getting product by id: {}", id);
         return inventoryService.getProductById(id);
     }
+
+    @GetMapping("/products")
+    public List<Product> getProducts() {
+        log.info("Getting all products ");
+        return inventoryService.getAllProducts();
+    }
 }

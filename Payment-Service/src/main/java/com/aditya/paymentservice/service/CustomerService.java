@@ -40,4 +40,8 @@ public class CustomerService {
         customerRepo.saveAll(customers);
         return customers;
     }
+
+    public List<Customer> getAllCustomers() {
+        return customerRepo.findAll();
+    }
 }

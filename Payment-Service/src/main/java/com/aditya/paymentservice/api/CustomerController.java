@@ -5,10 +5,7 @@ import com.aditya.paymentservice.entity.Customer;
 import com.aditya.paymentservice.service.CustomerService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -31,5 +28,10 @@ public class CustomerController {
         List<Customer> customers = customerService.addAllCustomers(customerDTOs);
         log.info("All customers added");
         return customers;
+    }
+
+    @GetMapping("/all")
+    public List<Customer> getAllCustomers(){
+        return customerService.getAllCustomers();
     }
 }
