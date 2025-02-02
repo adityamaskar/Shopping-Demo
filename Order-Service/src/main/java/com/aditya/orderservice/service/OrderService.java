@@ -1,6 +1,7 @@
 package com.aditya.orderservice.service;
 
 import com.aditya.orderservice.dto.OrderDTO;
+import com.aditya.orderservice.dto.PaymentHistory;
 import com.aditya.orderservice.entity.Order;
 import com.aditya.orderservice.entity.Status;
 import com.aditya.orderservice.repo.OrderRepo;
@@ -11,6 +12,7 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 
 @Service
@@ -49,6 +51,28 @@ public class OrderService {
         else {
             log.error("Order not found with id: {}", orderDTO.getId());
         }
+    }
+
+    @KafkaListener(topics = "payment-successful", groupId = "order-group", containerFactory = "kafkaListenerContainerFactoryPayment")
+    public void consumePaymentSuccessEvent(PaymentHistory paymentHistory) {
+        if (paymentHistory.getOrderId() != null)
+            log.info("Received the successful payment event from the payment-service, order ID : " + paymentHistory.getOrderId());
+        else {
+            log.error("Order Id is not present");
+        }
+        Long orderId = paymentHistory.getOrderId();
+        Optional<Order> byId = orderRepo.findById(orderId);
+        if(byId.isPresent() && paymentHistory.getPaymentStatus().equals("Payment Successful")){
+            Order order = byId.get();
+            order.setStatus(Status.Ordered);
+            orderRepo.save(order);
+            log.info("Order has successfully placed and updated in DB");
+        }
+        else {
+            log.error("Order does not present in the database");
+            log.error("Details : " + paymentHistory.toString());
+        }
+
     }
 
     public List<Order> getAllOrders() {

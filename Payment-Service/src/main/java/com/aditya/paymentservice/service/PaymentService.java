@@ -106,6 +106,9 @@ public class PaymentService {
             PaymentHistory saved = paymentHistoryRepo.save(paymentSuccessful);
             // todo sent confirmation to order-service.
             log.info("Amount deducted from customer account: " + totalAmount + ", Transaction Id : " + saved.getPaymentId());
+            log.info("Sending the successful payment event to order service for order confirmation :" + paymentSuccessful.toString());
+            CompletableFuture<SendResult<String, PaymentHistory>> send = kafkaTemplateInventory.send("payment-successful", paymentSuccessful);
+            log.info("Event sent to the Order service");
         } else {
             log.error("Insufficient balance in customer account");
             PaymentHistory paymentFailed = PaymentHistory.builder().customerId(orderDTO.getCustomerId())
