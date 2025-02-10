@@ -29,7 +29,7 @@ public class InventoryService {
         productRepo.saveAll(products);
     }
 
-    @KafkaListener(topics = "OrderCreated", groupId = "inventory-group", containerFactory = "kafkaListenerContainerFactoryOrder")
+    @KafkaListener(topics = "OrderCreated", groupId = "${default.consumer.group}", containerFactory = "kafkaListenerContainerFactoryOrder")
     public void createOrderEvent(OrderDTO order) {
         Product product = productRepo.findById(order.getProductId()).orElse(null);
         if(product == null || product.getQuantityInStock() == 0 || product.getQuantityInStock() < order.getQuantity()){
@@ -64,7 +64,7 @@ public class InventoryService {
         return productRepo.findById(id).orElse(null);
     }
 
-    @KafkaListener(topics = "payment-service-failure", groupId = "inventory-group", containerFactory = "kafkaListenerContainerFactoryPayment")
+    @KafkaListener(topics = "payment-service-failure", groupId = "${default.consumer.group}", containerFactory = "kafkaListenerContainerFactoryPayment")
     public void createPaymentFailureEvent(PaymentHistory paymentHistory) {
         log.info("Payment failed for order id: {}", paymentHistory.getOrderId());
         Product product = productRepo.findById(paymentHistory.getProductId()).orElse(null);

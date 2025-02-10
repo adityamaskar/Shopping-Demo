@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: shopping-demo-order
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: shopping-demo-order
+  template:
+    metadata:
+      labels:
+        app: shopping-demo-order
+    spec:
+      containers:
+        - name: shopping-demo-order
+          image: adityamaskar1/shopping-demo-order:1.0
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
+          env:
+            - name: spring.datasource.password
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: mysql-root-password
+            - name: spring.datasource.url
+              valueFrom:
+                configMapKeyRef:
+                  name: shopping-config
+                  key: DB_URL_ORDER
+            - name: spring.kafka.bootstrap-servers
+              valueFrom:
+                configMapKeyRef:
+                  name: shopping-config
+                  key: KAFKA_BROKERS
+            - name: server.port
+              value: "8080"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: shopping-demo-order-service
+spec:
+  selector:
+    app: shopping-demo-order
+  ports:
+    - protocol: TCP
+      port: 8081
+      targetPort: 8080
+#      nodePort: 32001
+  type: ClusterIP

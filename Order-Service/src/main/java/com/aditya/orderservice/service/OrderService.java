@@ -39,7 +39,7 @@ public class OrderService {
         return save.getId();
     }
 
-    @KafkaListener(topics = "InventoryFailed", groupId = "order-group", containerFactory = "kafkaListenerContainerFactoryOrder")
+    @KafkaListener(topics = "InventoryFailed", groupId = "${default.consumer.group}", containerFactory = "kafkaListenerContainerFactoryOrder")
     public void consumeInventoryFailedEvent(OrderDTO orderDTO) {
         log.info("Order failed event consumed: {}", orderDTO);
         Order order = orderRepo.findById(orderDTO.getId()).orElse(null);
@@ -53,7 +53,7 @@ public class OrderService {
         }
     }
 
-    @KafkaListener(topics = "payment-successful", groupId = "order-group", containerFactory = "kafkaListenerContainerFactoryPayment")
+    @KafkaListener(topics = "payment-successful", groupId = "${default.consumer.group}", containerFactory = "kafkaListenerContainerFactoryPayment")
     public void consumePaymentSuccessEvent(PaymentHistory paymentHistory) {
         if (paymentHistory.getOrderId() != null)
             log.info("Received the successful payment event from the payment-service, order ID : " + paymentHistory.getOrderId());

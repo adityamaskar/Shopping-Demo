@@ -1,0 +1,59 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: shopping-demo-payment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: shopping-demo-payment
+  template:
+    metadata:
+      labels:
+        app: shopping-demo-payment
+    spec:
+      containers:
+        - name: shopping-demo-payment
+          image: adityamaskar1/shopping-demo-payment:1.0
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
+          env:
+            - name: spring.datasource.password
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: mysql-root-password
+            - name: spring.datasource.url
+              valueFrom:
+                configMapKeyRef:
+                  name: shopping-config
+                  key: DB_URL_PAYMENT
+            - name: spring.kafka.bootstrap-servers
+              valueFrom:
+                configMapKeyRef:
+                  name: shopping-config
+                  key: KAFKA_BROKERS
+            - name: inventory-service-url
+              valueFrom:
+                configMapKeyRef:
+                  name: shopping-config
+                  key: INVENTORY_SERVICE_URL
+            - name: server.port
+              value: "8080"
+            - name: spring.jpa.hibernate.ddl-auto
+              value: "update"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: shopping-demo-payment-service
+spec:
+  selector:
+    app: shopping-demo-payment
+  ports:
+    - protocol: TCP
+      port: 8082
+      targetPort: 8080
+#      nodePort: 32002
+  type: ClusterIP

@@ -8,6 +8,7 @@ import com.aditya.paymentservice.repo.CustomerRepo;
 import com.aditya.paymentservice.repo.PaymentHistoryRepo;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.SendResult;
@@ -31,7 +32,10 @@ public class PaymentService {
 
     public final KafkaTemplate<String, PaymentHistory> kafkaTemplateInventory;
 
-    @KafkaListener(topics = "InventoryReserved", groupId = "payment-group", containerFactory = "kafkaListenerContainerFactoryPayment")
+    @Value("${inventory-service-url}")
+    private String inventoryServiceUrl;
+
+    @KafkaListener(topics = "InventoryReserved", groupId = "${default.consumer.group}", containerFactory = "kafkaListenerContainerFactoryPayment")
     public void consumePaymentEvent(OrderDTO orderDTO) {
         if (orderDTO == null) {
             log.error("OrderDTO is null, cannot process payment");
@@ -70,7 +74,7 @@ public class PaymentService {
 
 
     public Double CalculateTotalAmount(OrderDTO orderDTO) {
-        ProductDTO product = restTemplate.getForEntity("http://localhost:8080/inventory/product/" + orderDTO.getProductId(), ProductDTO.class).getBody();
+        ProductDTO product = restTemplate.getForEntity(inventoryServiceUrl + "/inventory/product/" + orderDTO.getProductId(), ProductDTO.class).getBody();
         if (product != null && product.getPrice() != null) {
             double totalCost = product.getPrice() * orderDTO.getQuantity();
             log.info("Total cost of the order id " + orderDTO.getId() + " is: " + totalCost);

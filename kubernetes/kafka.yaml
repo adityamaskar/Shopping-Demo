@@ -1,0 +1,247 @@
+#apiVersion: apps/v1
+#kind: Deployment
+#metadata:
+#  name: zookeeper
+#spec:
+#  replicas: 1
+#  selector:
+#    matchLabels:
+#      app: zookeeper
+#  template:
+#    metadata:
+#      labels:
+#        app: zookeeper
+#    spec:
+#      containers:
+#        - name: zookeeper
+#          image: confluentinc/cp-zookeeper:7.3.0
+#          ports:
+#            - containerPort: 2181
+#          env:
+#            - name: ZOOKEEPER_CLIENT_PORT
+#              value: "2181"
+#---
+#apiVersion: v1
+#kind: Service
+#metadata:
+#  name: zookeeper-service
+#spec:
+#  selector:
+#    app: zookeeper
+#  ports:
+#    - protocol: TCP
+#      port: 2181
+#      targetPort: 2181
+#---
+#apiVersion: v1
+#kind: Service
+#metadata:
+#  name: kafka-service1
+#spec:
+#  selector:
+#    app: kafka1
+#  ports:
+#    - name: kafka
+#      protocol: TCP
+#      port: 9092
+#      targetPort: 9092
+#---
+#apiVersion: apps/v1
+#kind: StatefulSet
+#metadata:
+#  name: kafka1
+#spec:
+#  serviceName: "kafka1"
+#  replicas: 1
+#  selector:
+#    matchLabels:
+#      app: kafka1
+#  template:
+#    metadata:
+#      labels:
+#        app: kafka1
+#    spec:
+#      containers:
+#        - name: kafka1
+#          image: confluentinc/cp-kafka:7.4.0
+#          ports:
+#            - containerPort: 9092
+#          volumeMounts:
+#            - name: data
+#              mountPath: /var/lib/kafka
+#          env:
+#            - name: KAFKA_BROKER_ID
+#              value: "0"  # Unique ID for this broker
+#            - name: KAFKA_ZOOKEEPER_CONNECT
+#              value: "zookeeper-service:2181"
+#            - name: KAFKA_ADVERTISED_LISTENERS
+#              value: "PLAINTEXT://kafka-service1:9092"  # Required field to fix the error
+#            - name: KAFKA_LISTENERS
+#              value: "PLAINTEXT://0.0.0.0:9092"
+#            - name: KAFKA_LOG_DIRS
+#              value: "/var/lib/kafka/logs"  # Directory for Kafka logs
+#            - name: KAFKA_NUM_PARTITIONS
+#              value: "3"  # Default number of partitions per topic
+#            - name: KAFKA_NUM_NETWORK_THREADS
+#              value: "3"  # Number of network threads
+#            - name: KAFKA_NUM_IO_THREADS
+#              value: "8"  # Number of I/O threads
+#            - name: KAFKA_LOG_RETENTION_HOURS
+#              value: "168"  # Retention period for logs (in hours)
+#            - name: KAFKA_LOG_SEGMENT_BYTES
+#              value: "1073741824"  # Size of log segments (1 GB)
+#            - name: KAFKA_LOG_RETENTION_CHECK_INTERVAL_MS
+#              value: "300000"  # Interval to check log retention (in ms)
+#            - name: KAFKA_DEFAULT_REPLICATION_FACTOR
+#              value: "3"  # Default replication factor  for multi broker
+#            - name: KAFKA_OFFSET_METADATA_MAX_AGE_MS
+#              value: "10000"  # Maximum age of offset metadata
+#            - name: KAFKA_CONNECTION_MAX_IDLE_MS
+#              value: "10000"  # Maximum idle time for connections
+#            - name: KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR
+#              value: "3"  # Replication factor for offsets topic for multi broker
+#      volumes:
+#        - name: data
+#          emptyDir: {}
+#---
+#apiVersion: v1
+#kind: Service
+#metadata:
+#  name: kafka-service2
+#spec:
+#  selector:
+#    app: kafka2
+#  ports:
+#    - name: kafka
+#      protocol: TCP
+#      port: 9093
+#      targetPort: 9092
+#---
+#apiVersion: apps/v1
+#kind: StatefulSet
+#metadata:
+#  name: kafka2
+#spec:
+#  serviceName: "kafka2"
+#  replicas: 1
+#  selector:
+#    matchLabels:
+#      app: kafka2
+#  template:
+#    metadata:
+#      labels:
+#        app: kafka2
+#    spec:
+#      containers:
+#        - name: kafka2
+#          image: confluentinc/cp-kafka:7.4.0
+#          ports:
+#            - containerPort: 9092
+#          volumeMounts:
+#            - name: data
+#              mountPath: /var/lib/kafka
+#          env:
+#            - name: KAFKA_BROKER_ID
+#              value: "1"  # Unique ID for this broker
+#            - name: KAFKA_ZOOKEEPER_CONNECT
+#              value: "zookeeper-service:2181"
+#            - name: KAFKA_ADVERTISED_LISTENERS
+#              value: "PLAINTEXT://kafka-service2:9093"  # Required field to fix the error
+#            - name: KAFKA_LISTENERS
+#              value: "PLAINTEXT://0.0.0.0:9092"
+#            - name: KAFKA_LOG_DIRS
+#              value: "/var/lib/kafka/logs"  # Directory for Kafka logs
+#            - name: KAFKA_NUM_PARTITIONS
+#              value: "3"  # Default number of partitions per topic
+#            - name: KAFKA_NUM_NETWORK_THREADS
+#              value: "3"  # Number of network threads
+#            - name: KAFKA_NUM_IO_THREADS
+#              value: "8"  # Number of I/O threads
+#            - name: KAFKA_LOG_RETENTION_HOURS
+#              value: "168"  # Retention period for logs (in hours)
+#            - name: KAFKA_LOG_SEGMENT_BYTES
+#              value: "1073741824"  # Size of log segments (1 GB)
+#            - name: KAFKA_LOG_RETENTION_CHECK_INTERVAL_MS
+#              value: "300000"  # Interval to check log retention (in ms)
+#            - name: KAFKA_DEFAULT_REPLICATION_FACTOR
+#              value: "3"  # Default replication factor  for multi broker
+#            - name: KAFKA_OFFSET_METADATA_MAX_AGE_MS
+#              value: "10000"  # Maximum age of offset metadata
+#            - name: KAFKA_CONNECTION_MAX_IDLE_MS
+#              value: "10000"  # Maximum idle time for connections
+#            - name: KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR
+#              value: "3"  # Replication factor for offsets topic for multi broker
+#      volumes:
+#        - name: data
+#          emptyDir: {}
+#---
+#apiVersion: v1
+#kind: Service
+#metadata:
+#  name: kafka-service3
+#spec:
+#  selector:
+#    app: kafka3
+#  ports:
+#    - name: kafka3
+#      protocol: TCP
+#      port: 9094
+#      targetPort: 9092
+#---
+#apiVersion: apps/v1
+#kind: StatefulSet
+#metadata:
+#  name: kafka3
+#spec:
+#  serviceName: "kafka3"
+#  replicas: 1
+#  selector:
+#    matchLabels:
+#      app: kafka3
+#  template:
+#    metadata:
+#      labels:
+#        app: kafka3
+#    spec:
+#      containers:
+#        - name: kafka3
+#          image: confluentinc/cp-kafka:7.4.0
+#          ports:
+#            - containerPort: 9092
+#          volumeMounts:
+#            - name: data
+#              mountPath: /var/lib/kafka
+#          env:
+#            - name: KAFKA_BROKER_ID
+#              value: "2"  # Unique ID for this broker
+#            - name: KAFKA_ZOOKEEPER_CONNECT
+#              value: "zookeeper-service:2181"
+#            - name: KAFKA_ADVERTISED_LISTENERS
+#              value: "PLAINTEXT://kafka-service3:9094"  # Required field to fix the error
+#            - name: KAFKA_LISTENERS
+#              value: "PLAINTEXT://0.0.0.0:9092"
+#            - name: KAFKA_LOG_DIRS
+#              value: "/var/lib/kafka/logs"  # Directory for Kafka logs
+#            - name: KAFKA_NUM_PARTITIONS
+#              value: "3"  # Default number of partitions per topic
+#            - name: KAFKA_NUM_NETWORK_THREADS
+#              value: "3"  # Number of network threads
+#            - name: KAFKA_NUM_IO_THREADS
+#              value: "8"  # Number of I/O threads
+#            - name: KAFKA_LOG_RETENTION_HOURS
+#              value: "168"  # Retention period for logs (in hours)
+#            - name: KAFKA_LOG_SEGMENT_BYTES
+#              value: "1073741824"  # Size of log segments (1 GB)
+#            - name: KAFKA_LOG_RETENTION_CHECK_INTERVAL_MS
+#              value: "300000"  # Interval to check log retention (in ms)
+#            - name: KAFKA_DEFAULT_REPLICATION_FACTOR
+#              value: "3"  # Default replication factor  for multi broker
+#            - name: KAFKA_OFFSET_METADATA_MAX_AGE_MS
+#              value: "10000"  # Maximum age of offset metadata
+#            - name: KAFKA_CONNECTION_MAX_IDLE_MS
+#              value: "10000"  # Maximum idle time for connections
+#            - name: KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR
+#              value: "3"  # Replication factor for offsets topic for multi broker
+#      volumes:
+#        - name: data
+#          emptyDir: {}
