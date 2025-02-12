@@ -23,6 +23,7 @@ Steps to run whole setup on the AKS : -
    helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
 
    helm install ingress-nginx ingress-nginx/ingress-nginx    --namespace ingress-basic    --set controller.replicaCount=1    --set controller.nodeSelector."kubernetes\.io/os"=linux    --set defaultBackend.nodeSelector."kubernetes\.io/os"=linux    --set controller.service.externalTrafficPolicy=Local --set controller.service.loadBalancerIP="74.225.179.49"
+   note- you have to use the url while creating the image for the UI.
 5. then deploy whole all yaml files.
 
     
