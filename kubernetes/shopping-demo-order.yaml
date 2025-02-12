@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   name: shopping-demo-order
 spec:
-  replicas: 1
+  replicas: 3
   selector:
     matchLabels:
       app: shopping-demo-order
@@ -12,6 +12,13 @@ spec:
       labels:
         app: shopping-demo-order
     spec:
+      initContainers:
+        - name: wait-for-mysql
+          image: busybox:1.28
+          command:
+            - 'sh'
+            - '-c'
+            - 'until nc -z mysql-service 3306; do echo "Waiting for MySQL..."; sleep 2; done; echo "MySQL is up!"'
       containers:
         - name: shopping-demo-order
           image: adityamaskar1/shopping-demo-order:1.0

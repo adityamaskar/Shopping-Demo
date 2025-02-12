@@ -3,7 +3,7 @@ import { Customer, Order, Product } from "../../types"; // Define your types
 import { OrderFormData } from "../../Components/OrderFrom";
 
 class OrderService {
-  baseUrl = import.meta.env.VITE_BASE_URL || "/";
+  baseUrl = import.meta.env.VITE_API_BASE_URL || "/";
   // Fetch all orders
   async getOrders(): Promise<Order[]> {
     const response = await axiosInstance.get(

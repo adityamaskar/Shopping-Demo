@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import OrderService from "../api/services/AppService";
-import { Order, Product } from "../types";
+import { Order } from "../types";
 import "bootstrap/dist/css/bootstrap.min.css";
 
 const OrderList: React.FC = () => {

@@ -9,3 +9,5 @@ data:
   DB_USERNAME: "root"
   KAFKA_BROKERS: "my-cluster-kafka-bootstrap:9092,my-cluster-kafka-bootstrap:9093,my-cluster-kafka-bootstrap:9091"                      # Kafka broker address
   INVENTORY_SERVICE_URL: "http://shopping-demo-inventory-service:8080"
+#  BASE_URL: "http://74.225.179.49"
+#  BASE_URL: "http://localhost:8082"

@@ -6,6 +6,9 @@ spec:
   kafka:
     version: 3.8.0
     replicas: 3
+    config:
+      num.partitions: 3  # Default number of partitions for new topics
+      default.replication.factor: 3  # Default replication factor for new topics
     listeners:
       - name: plain
         port: 9092
