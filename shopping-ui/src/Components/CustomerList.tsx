@@ -6,18 +6,19 @@ import "bootstrap/dist/css/bootstrap.min.css";
 const CustomerList: React.FC = () => {
   const [customers, setCustomers] = useState<Customer[]>([]);
 
+  const fetchData = async () => {
+    try {
+      const result: Customer[] = await OrderService.getCustomers();
+      console.log(result);
+      setCustomers(result);
+    } catch (err) {
+      console.log(err);
+    } finally {
+      console.log("Finally");
+    }
+  };
+
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const result: Customer[] = await OrderService.getCustomers();
-        console.log(result);
-        setCustomers(result);
-      } catch (err) {
-        console.log(err);
-      } finally {
-        console.log("Finally");
-      }
-    };
     fetchData();
   }, []);
 
@@ -27,6 +28,11 @@ const CustomerList: React.FC = () => {
 
       <div className="my-3 d-flex" style={{ justifyContent: "center" }}>
         <h2>Customer List</h2>
+      </div>
+      <div className="my-3 d-flex" style={{ justifyContent: "center" }}>
+        <button className="btn btn-primary" onClick={fetchData}>
+          Refresh
+        </button>
       </div>
       <div className="my-3 d-flex" style={{ justifyContent: "center" }}>
         <table className="table table-bordered table-striped mx-5">

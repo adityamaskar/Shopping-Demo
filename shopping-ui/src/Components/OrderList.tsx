@@ -6,18 +6,19 @@ import "bootstrap/dist/css/bootstrap.min.css";
 const OrderList: React.FC = () => {
   const [orders, setOrders] = useState<Order[]>([]);
 
+  const fetchData = async () => {
+    try {
+      const orderResult: Order[] = await OrderService.getOrders();
+      console.log(orderResult);
+      setOrders(orderResult);
+    } catch (err) {
+      console.log(err);
+    } finally {
+      console.log("Finally");
+    }
+  };
+
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const orderResult: Order[] = await OrderService.getOrders();
-        console.log(orderResult);
-        setOrders(orderResult);
-      } catch (err) {
-        console.log(err);
-      } finally {
-        console.log("Finally");
-      }
-    };
     fetchData();
   }, []);
 
@@ -26,6 +27,11 @@ const OrderList: React.FC = () => {
       {/* order list */}
       <div className="my-3 d-flex" style={{ justifyContent: "center" }}>
         <h2>Order List</h2>
+      </div>
+      <div className="my-3 d-flex" style={{ justifyContent: "center" }}>
+        <button className="btn btn-primary" onClick={fetchData}>
+          Refresh
+        </button>
       </div>
       <div className="my-3 d-flex" style={{ justifyContent: "center" }}>
         <table className="table table-bordered table-striped mx-5">
