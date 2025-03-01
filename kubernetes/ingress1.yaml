@@ -35,6 +35,3 @@ spec:
                 name: shopping-demo-payment-service
                 port:
                   number: 8082
-
-
-
