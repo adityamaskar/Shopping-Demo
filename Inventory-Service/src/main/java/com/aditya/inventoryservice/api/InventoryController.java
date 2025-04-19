@@ -5,8 +5,10 @@ import com.aditya.inventoryservice.service.InventoryService;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
+import java.awt.*;
 import java.util.List;
 
 @RestController
@@ -17,7 +19,8 @@ public class InventoryController {
 
     private final InventoryService inventoryService;
 
-    @PostMapping("/add")
+    @PostMapping(value = "/add", consumes = {MediaType.APPLICATION_JSON_VALUE,  MediaType.APPLICATION_XML_VALUE}
+    , produces = { MediaType.APPLICATION_JSON_VALUE , MediaType.APPLICATION_XML_VALUE})
     public void addProducts(@RequestBody List<Product> products) {
         log.info("Adding products to inventory");
         products.forEach(product -> log.info("Product: {}", product));
