@@ -42,6 +42,7 @@ public class KafkaConsumerConfigPayment {
     @Bean
     public ConcurrentKafkaListenerContainerFactory<String, PaymentHistory> kafkaListenerContainerFactoryPayment() {
         ConcurrentKafkaListenerContainerFactory<String, PaymentHistory> factory = new ConcurrentKafkaListenerContainerFactory<>();
+        factory.getContainerProperties().setObservationEnabled(true);
         factory.setConsumerFactory(consumerFactoryPayment());
         return factory;
     }

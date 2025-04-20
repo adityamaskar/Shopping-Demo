@@ -32,6 +32,8 @@ public class KafkaProducerConfig {
 
     @Bean
     public KafkaTemplate<String, OrderDTO> KafkaTemplateInventory() {
-        return new KafkaTemplate<>(inventoryProducerFactory());
+        KafkaTemplate<String, OrderDTO> template = new KafkaTemplate<>(inventoryProducerFactory());
+        template.setObservationEnabled(true);
+        return template;
     }
 }

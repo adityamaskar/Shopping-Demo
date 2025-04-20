@@ -1,6 +1,5 @@
 package com.aditya.inventoryservice.config;
 
-import com.aditya.inventoryservice.dto.OrderDTO;
 import com.aditya.inventoryservice.dto.PaymentHistory;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
@@ -43,6 +42,7 @@ public class KafkaConsumerConfigPayment {
     @Bean
     public ConcurrentKafkaListenerContainerFactory<String, PaymentHistory> kafkaListenerContainerFactoryPayment() {
         ConcurrentKafkaListenerContainerFactory<String, PaymentHistory> factory = new ConcurrentKafkaListenerContainerFactory<>();
+        factory.getContainerProperties().setObservationEnabled(true);
         factory.setConsumerFactory(consumerFactoryPayment());
         return factory;
     }

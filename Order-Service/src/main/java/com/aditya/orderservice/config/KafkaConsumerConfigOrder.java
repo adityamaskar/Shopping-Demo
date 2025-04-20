@@ -42,6 +42,7 @@ public class KafkaConsumerConfigOrder {
     @Bean
     public ConcurrentKafkaListenerContainerFactory<String, OrderDTO> kafkaListenerContainerFactoryOrder() {
         ConcurrentKafkaListenerContainerFactory<String, OrderDTO> factory = new ConcurrentKafkaListenerContainerFactory<>();
+        factory.getContainerProperties().setObservationEnabled(true);
         factory.setConsumerFactory(consumerFactoryOrder());
         return factory;
     }

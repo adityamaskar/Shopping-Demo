@@ -1,7 +1,6 @@
 package com.aditya.orderservice.config;
 
 import com.aditya.orderservice.dto.OrderDTO;
-import com.aditya.orderservice.entity.Order;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.springframework.beans.factory.annotation.Value;
@@ -32,6 +31,8 @@ public class KafkaProducerConfig {
 
     @Bean
     public KafkaTemplate<String, OrderDTO> KafkaTemplateOrder() {
-        return new KafkaTemplate<>(orderProducerFactory());
+        KafkaTemplate<String, OrderDTO> template = new KafkaTemplate<>(orderProducerFactory());
+        template.setObservationEnabled(true);
+        return template;
     }
 }

@@ -32,6 +32,8 @@ public class KafkaProducerConfig {
 
     @Bean
     public KafkaTemplate<String, PaymentHistory> KafkaTemplateInventory() {
-        return new KafkaTemplate<>(paymentProducerFactory());
+        KafkaTemplate<String, PaymentHistory> template = new KafkaTemplate<>(paymentProducerFactory());
+        template.setObservationEnabled(true);
+        return template;
     }
 }
