@@ -34,4 +34,10 @@ public class CustomerController {
     public List<Customer> getAllCustomers(){
         return customerService.getAllCustomers();
     }
+
+    //just for the demo call
+    @PostMapping("/get-data")
+    public String getData(@RequestBody String s){
+        return customerService.getData(s);
+    }
 }

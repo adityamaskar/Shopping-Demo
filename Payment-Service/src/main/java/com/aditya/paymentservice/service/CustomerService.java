@@ -44,4 +44,8 @@ public class CustomerService {
     public List<Customer> getAllCustomers() {
         return customerRepo.findAll();
     }
+
+    public String getData(String s) {
+        return s + " payment";
+    }
 }

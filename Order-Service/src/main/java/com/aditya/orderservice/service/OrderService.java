@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
 import java.util.Optional;
@@ -21,6 +22,8 @@ import java.util.Optional;
 public class OrderService {
 
     private final OrderRepo orderRepo;
+
+    private final RestTemplate restTemplate;
 
     private final KafkaTemplate<String, OrderDTO> kafkaTemplateOrder;
     public Long placeOrder(OrderDTO orderDTO) {
@@ -77,5 +80,11 @@ public class OrderService {
 
     public List<Order> getAllOrders() {
         return orderRepo.findAll();
+    }
+
+    public String getDataFromInventory() {
+//        RestTemplate restTemplate = new RestTemplate();
+        log.info("going to make api call in order");
+        return restTemplate.postForObject("http://localhost:1234/inventory/get-data-from-payment", "order", String.class);
     }
 }

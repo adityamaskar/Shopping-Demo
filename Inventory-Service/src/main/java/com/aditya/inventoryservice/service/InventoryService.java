@@ -11,6 +11,7 @@ import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.SendResult;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -23,6 +24,8 @@ public class InventoryService {
     private final ProductRepo productRepo;
 
     private final KafkaTemplate<String, OrderDTO> kafkaTemplateInventory;
+
+    private final RestTemplate restTemplate;
 
 
     public void addProducts(List<Product> products) {
@@ -93,5 +96,9 @@ public class InventoryService {
 
     public List<Product> getAllProducts() {
         return productRepo.findAll();
+    }
+
+    public String getFromPayment(String s) {
+        return restTemplate.postForObject("http://localhost:1234/customer/get-data",  s +" Inventory", String.class);
     }
 }

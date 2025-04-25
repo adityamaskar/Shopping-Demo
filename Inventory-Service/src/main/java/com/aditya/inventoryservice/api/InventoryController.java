@@ -2,13 +2,11 @@ package com.aditya.inventoryservice.api;
 
 import com.aditya.inventoryservice.entity.Product;
 import com.aditya.inventoryservice.service.InventoryService;
-import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
-import java.awt.*;
 import java.util.List;
 
 @RestController
@@ -38,5 +36,12 @@ public class InventoryController {
     public List<Product> getProducts() {
         log.info("Getting all products ");
         return inventoryService.getAllProducts();
+    }
+
+    // just for the demo purpose
+    @PostMapping("/get-data-from-payment")
+    public String getFromPayment(@RequestBody String s ){
+        log.info("got : "+ s + "  from the order");
+        return inventoryService.getFromPayment(s);
     }
 }
